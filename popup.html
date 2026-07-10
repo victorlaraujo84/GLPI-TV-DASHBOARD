@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <style>
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      background: #111520;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 8px 4px;
+      background: none;
+      border: none;
+      color: rgba(232, 236, 244, 0.4);
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s;
+    }
+
+    .tab-btn.active {
+      color: #60a5fa;
+      border-bottom-color: #3b82f6;
+    }
+
+    .tab-pane {
+      display: none;
+    }
+
+    .tab-pane.active {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      padding: 16px;
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      width: 340px;
+      background: #0d1017;
+      color: #e8ecf4;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      font-size: 13px;
+    }
+
+    .header {
+      background: #111520;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #3b82f6;
+      box-shadow: 0 0 6px #3b82f688;
+    }
+
+    .header h1 {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: #e8ecf4;
+    }
+
+    .body {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .field label {
+      display: block;
+      font-size: 10px;
+      color: rgba(232, 236, 244, 0.35);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 5px;
+      font-family: monospace;
+    }
+
+    input[type=text],
+    input[type=number] {
+      width: 100%;
+      background: #161b28;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 5px;
+      padding: 7px 10px;
+      font-size: 12px;
+      font-family: monospace;
+      color: #e8ecf4;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    input:focus {
+      border-color: #3b82f6;
+    }
+
+    input::placeholder {
+      color: rgba(232, 236, 244, 0.2);
+    }
+
+    .hint {
+      font-size: 10px;
+      color: rgba(232, 236, 244, 0.25);
+      margin-top: 4px;
+      line-height: 1.5;
+      font-family: monospace;
+    }
+
+    .divider {
+      height: 1px;
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .row .field {
+      flex: 1;
+    }
+
+    .btn-save {
+      width: 100%;
+      padding: 9px;
+      background: rgba(59, 130, 246, 0.15);
+      border: 1px solid #3b82f6;
+      border-radius: 6px;
+      color: #60a5fa;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .btn-save:hover {
+      background: rgba(59, 130, 246, 0.28);
+    }
+
+    .btn-play {
+      background: rgba(59, 130, 246, 0.15);
+      border: 1px solid #3b82f6;
+      border-radius: 5px;
+      color: #60a5fa;
+      cursor: pointer;
+      padding: 0 10px;
+      font-size: 10px;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-play:hover {
+      background: rgba(59, 130, 246, 0.28);
+    }
+
+    .btn-dashboard {
+      width: 100%;
+      padding: 9px;
+      background: rgba(74, 222, 128, 0.1);
+      border: 1px solid rgba(74, 222, 128, 0.3);
+      border-radius: 6px;
+      color: #4ade80;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .btn-dashboard:hover {
+      background: rgba(74, 222, 128, 0.2);
+    }
+
+    .btn-refresh {
+      width: 100%;
+      padding: 7px;
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      color: rgba(232, 236, 244, 0.4);
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .btn-refresh:hover {
+      border-color: rgba(255, 255, 255, 0.2);
+      color: #e8ecf4;
+    }
+
+    .status-bar {
+      padding: 8px 16px;
+      background: #111520;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      font-size: 10px;
+      font-family: monospace;
+      color: rgba(232, 236, 244, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #4ade80;
+      display: inline-block;
+      margin-right: 5px;
+    }
+
+    .status-dot.off {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    #toast {
+      display: none;
+      position: fixed;
+      bottom: 44px;
+      left: 16px;
+      right: 16px;
+      background: #1e3a2f;
+      border: 1px solid rgba(74, 222, 128, 0.3);
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-size: 11px;
+      color: #4ade80;
+      font-family: monospace;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="header">
+    <div class="logo-dot"></div>
+    <h1>GLPI TV · Configuração</h1>
+  </div>
+
+  <!-- PERFIL SELECTOR -->
+  <div style="padding: 12px 16px 0; background: #111520; display: flex; gap: 8px; align-items: center;">
+    <select id="profileSelect"
+      style="flex:1; background: #161b28; border: 1px solid rgba(255,255,255,0.1); border-radius: 5px; padding: 6px 10px; font-size: 12px; color: #e8ecf4; outline: none;"></select>
+    <button id="btnNewProfile"
+      style="background: rgba(59,130,246,0.15); border: 1px solid #3b82f6; border-radius: 5px; color: #60a5fa; cursor: pointer; padding: 5px 9px; font-size: 13px;"
+      title="Novo Perfil">➕</button>
+    <button id="btnDelProfile"
+      style="background: rgba(246,59,59,0.15); border: 1px solid #f63b3b; border-radius: 5px; color: #fa6060; cursor: pointer; padding: 5px 9px; font-size: 13px;"
+      title="Excluir Perfil">🗑</button>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="config">⚙ Config</button>
+    <button class="tab-btn" data-tab="rules">🔀 Regras</button>
+    <button class="tab-btn" data-tab="cards">📊 Cards</button>
+    <button class="tab-btn" data-tab="contacts">📞 Contatos</button>
+  </div>
+
+  <!-- TAB: CONFIG -->
+  <div class="tab-pane active" id="tab-config">
+    <div class="field">
+      <label>URL — Chamados Abertos (Fila)</label>
+      <input type="text" id="urlOpen" placeholder="URL da listagem de chamados em aberto...">
+      <div class="hint">Filtre por Status=Novo/Processamento e cole a URL</div>
+    </div>
+    <div class="field">
+      <label>URL — Solucionados (Dia)</label>
+      <input type="text" id="urlSolved" placeholder="URL da pesquisa de solucionados hoje...">
+      <div class="hint">Filtre por Status=Solucionado + Data=Hoje</div>
+    </div>
+    <div class="field">
+      <label>URL — Solucionados (Semana)</label>
+      <input type="text" id="urlSolvedWeek" placeholder="URL da pesquisa de solucionados na semana...">
+      <div class="hint">Filtre por Status=Solucionado + Data=Esta Semana</div>
+    </div>
+    <div class="field">
+      <label>Sons — Novo Chamado</label>
+      <div style="display: flex; gap: 8px;">
+        <input type="text" id="soundNew" placeholder="Ex: alerta.mp3 ou https://..." style="flex: 1;">
+        <button class="btn-play" id="btnPlayNew" title="Testar Som">▶</button>
+      </div>
+    </div>
+    <div class="field">
+      <label>Sons — Chamado Crítico</label>
+      <div style="display: flex; gap: 8px;">
+        <input type="text" id="soundCrit" placeholder="Ex: urgente.mp3 ou https://..." style="flex: 1;">
+        <button class="btn-play" id="btnPlayCrit" title="Testar Som">▶</button>
+      </div>
+    </div>
+    <div class="row">
+      <div class="field">
+        <label>Intervalo (min)</label>
+        <input type="number" id="interval" value="1" min="1" max="60">
+      </div>
+      <div class="field">
+        <label>Título do Dashboard</label>
+        <input type="text" id="dashTitle" placeholder="Ex: Suporte N1">
+      </div>
+    </div>
+    <button class="btn-save" id="btnSave">💾 Salvar e Iniciar Coleta</button>
+    <div class="divider"></div>
+    <button class="btn-dashboard" id="btnDash">📺 Abrir Dashboard na TV</button>
+    <button class="btn-refresh" id="btnRefresh">↻ Forçar atualização agora</button>
+  </div>
+
+  <!-- TAB: REGRAS -->
+  <div class="tab-pane" id="tab-rules">
+    <div class="field">
+      <label>Regras de Agrupamento</label>
+      <div class="hint" style="margin-bottom: 8px;">Se o TÍTULO do chamado contiver a palavra-chave abaixo, ele será
+        movido para o grupo especificado.</div>
+      <div id="rules-list" style="display: flex; flex-direction: column; gap: 6px;"></div>
+      <button id="btnAddRule"
+        style="margin-top: 8px; width: 100%; background: rgba(255,255,255,0.04); border: 1px dashed rgba(255,255,255,0.15); border-radius: 5px; color: rgba(232,236,244,0.4); font-size: 11px; padding: 6px; cursor: pointer;">+
+        Adicionar Regra</button>
+    </div>
+    <div class="field">
+      <label>Mapa de Localizações (sigla → local)</label>
+      <div class="hint" style="margin-bottom: 8px;">Cole ou edite o JSON com as siglas do setor e seus endereços. Deixe
+        em branco para usar o padrão.</div>
+      <textarea id="locationMap" rows="6"
+        style="width:100%; background:#161b28; border:1px solid rgba(255,255,255,0.1); border-radius:5px; padding:8px 10px; font-size:11px; font-family: monospace; color:#e8ecf4; resize: vertical; outline: none;"
+        placeholder='{&#10;  "SIGLA": "Localização completa",&#10;  "TI": "1º andar - Sala 101"&#10;}'></textarea>
+    </div>
+    <button class="btn-save" id="btnSaveRules">💾 Salvar Regras</button>
+  </div>
+
+  <!-- TAB: CARDS -->
+  <div class="tab-pane" id="tab-cards">
+    <div class="field">
+      <label>Cards Visíveis no Dashboard</label>
+      <div class="hint" style="margin-bottom: 10px;">Ative ou desative métricas para este perfil de operação.</div>
+      <div id="cards-toggles" style="display: flex; flex-direction: column; gap: 10px;"></div>
+    </div>
+    <button class="btn-save" id="btnSaveCards">💾 Salvar Cards</button>
+  </div>
+
+  <!-- TAB: CONTACTS -->
+  <div class="tab-pane" id="tab-contacts">
+    <div class="field">
+      <label>Roteamento por Fila &rarr; Telegram</label>
+      <div class="hint" style="margin-bottom: 8px;">Mapeie cada fila do GLPI para um Chat ID do Telegram (técnico ou
+        grupo). Requer o Bot Token configurado abaixo.</div>
+      <div id="contacts-list" style="display: flex; flex-direction: column; gap: 8px;"></div>
+      <button id="btnAddContact"
+        style="margin-top: 8px; width: 100%; background: rgba(255,255,255,0.04); border: 1px dashed rgba(255,255,255,0.15); border-radius: 5px; color: rgba(232,236,244,0.4); font-size: 11px; padding: 6px; cursor: pointer;">+
+        Adicionar Roteamento</button>
+    </div>
+    <div class="divider"></div>
+    <div class="field">
+      <label>Canais de Notifica&ccedil;&atilde;o</label>
+      <div class="field" style="margin-top: 8px;">
+        <label>MS Teams &mdash; Webhook URL</label>
+        <input type="text" id="webhookTeams" placeholder="https://outlook.office.com/webhook/...">
+        <div class="hint">Cole a URL do Incoming Webhook do canal do Teams.</div>
+      </div>
+      <div class="field">
+        <label>Google Chat &mdash; Webhook URL</label>
+        <input type="text" id="webhookGoogle" placeholder="https://chat.googleapis.com/v1/spaces/...">
+        <div class="hint">Cole a URL do webhook do espa&ccedil;o do Google Chat.</div>
+      </div>
+      <div class="field">
+        <label>Telegram &mdash; Bot Token</label>
+        <input type="text" id="telegramBotToken" placeholder="1234567890:AABbCcDd...">
+        <div class="hint">Token do bot criado no @BotFather.</div>
+      </div>
+      <div class="field">
+        <label>Telegram &mdash; Canal Global (Chat ID)</label>
+        <input type="text" id="telegramGlobalChatId" placeholder="-100123456789">
+        <div class="hint">Todos os alertas urgentes tamb&eacute;m ser&atilde;o enviados para este chat/grupo. Deixe
+          vazio para n&atilde;o usar.</div>
+      </div>
+      <div class="field">
+        <label>API SAI APP Key</label>
+        <input type="text" id="apiKeySai" placeholder="Sua chave de API...">
+      </div>
+    </div>
+    <button class="btn-save" id="btnSaveContacts">💾 Salvar Notificações</button>
+  </div>
+
+  <div class="status-bar">
+    <span><span class="status-dot off" id="statusDot"></span><span id="statusText">Aguardando configuração</span></span>
+    <span id="lastUpdate">—</span>
+  </div>
+
+  <div id="toast"></div>
+
+  <script src="popup.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,1271 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GLPI · Operations Command Center</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      /* Palette */
+      --bg: #030508;
+      --surface: rgba(13, 17, 23, 0.7);
+      --surface-hover: rgba(22, 27, 34, 0.8);
+      --border: rgba(255, 255, 255, 0.08);
+      --border-bright: rgba(255, 255, 255, 0.15);
+
+      --text-main: #f0f6fc;
+      --text-muted: #8b949e;
+      --text-dim: #484f58;
+
+      --accent: #3b82f6;
+      --accent-glow: rgba(59, 130, 246, 0.4);
+
+      --red: #ff5f5f;
+      --red-glow: rgba(255, 95, 95, 0.2);
+      --amber: #fbb034;
+      --amber-glow: rgba(251, 176, 52, 0.2);
+      --green: #3fb950;
+      --green-glow: rgba(63, 185, 80, 0.2);
+      --purple: #a371f7;
+
+      --font-main: 'Outfit', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+
+      --radius-lg: 16px;
+      --radius-md: 10px;
+      --radius-sm: 6px;
+
+      --glass: blur(12px) saturate(180%);
+    }
+
+    body.theme-light {
+      --bg: #f8fafc;
+      --surface: rgba(255, 255, 255, 0.85);
+      --surface-hover: rgba(241, 245, 249, 0.95);
+      --border: rgba(15, 23, 42, 0.1);
+      --border-bright: rgba(15, 23, 42, 0.2);
+
+      --text-main: #0f172a;
+      --text-muted: #475569;
+      --text-dim: #64748b;
+
+      --accent: #2563eb;
+      --accent-glow: rgba(37, 99, 235, 0.2);
+
+      --red: #ef4444;
+      --red-glow: rgba(239, 68, 68, 0.15);
+      --amber: #f59e0b;
+      --amber-glow: rgba(245, 158, 11, 0.15);
+      --green: #10b981;
+      --green-glow: rgba(16, 185, 129, 0.15);
+      --purple: #8b5cf6;
+    }
+
+    body.theme-light .logo-text h1 {
+      background: linear-gradient(to right, #0f172a, #475569);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    body.theme-light .table-filters {
+      background: rgba(255, 255, 255, 0.4);
+    }
+
+    body.theme-light .ticket-count {
+      background: rgba(37, 99, 235, 0.1);
+    }
+
+    body.theme-light .search-container input {
+      color: var(--text-main);
+    }
+
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text-main);
+      font-family: var(--font-main);
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      background-image:
+        radial-gradient(circle at 0% 0%, rgba(59, 130, 246, 0.05) 0%, transparent 50%),
+        radial-gradient(circle at 100% 100%, rgba(163, 113, 247, 0.05) 0%, transparent 50%);
+    }
+
+    /* Ambient Animation Background */
+    .ambient-bg {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .blob {
+      position: absolute;
+      width: 40vw;
+      height: 40vw;
+      background: var(--accent);
+      filter: blur(100px);
+      opacity: 0.03;
+      border-radius: 50%;
+      animation: move 20s infinite alternate;
+    }
+
+    @keyframes move {
+      from {
+        transform: translate(-10%, -10%);
+      }
+
+      to {
+        transform: translate(20%, 20%);
+      }
+    }
+
+    /* HEADER */
+    header {
+      height: 80px;
+      padding: 0 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: var(--glass);
+      z-index: 100;
+    }
+
+    .logo-wrap {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--accent), var(--purple));
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 20px var(--accent-glow);
+    }
+
+    .logo-text h1 {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      background: linear-gradient(to right, #fff, #ccc);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .logo-text span {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+
+    .header-meta {
+      display: flex;
+      align-items: center;
+      gap: 30px;
+    }
+
+    .live-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      background: rgba(63, 185, 80, 0.1);
+      border: 1px solid rgba(63, 185, 80, 0.2);
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--green);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .live-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--green);
+      border-radius: 50%;
+      box-shadow: 0 0 10px var(--green);
+      animation: pulse-green 2s infinite;
+    }
+
+    @keyframes pulse-green {
+      0% {
+        transform: scale(0.95);
+        opacity: 0.5;
+      }
+
+      50% {
+        transform: scale(1.1);
+        opacity: 1;
+      }
+
+      100% {
+        transform: scale(0.95);
+        opacity: 0.5;
+      }
+    }
+
+    .clock-wrap {
+      text-align: right;
+      min-width: 140px;
+    }
+
+    #current-time {
+      font-size: 24px;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      display: block;
+      line-height: 1;
+    }
+
+    #current-date {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    /* MAIN CONTENT */
+    main {
+      flex: 1;
+      padding: 24px 40px;
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      grid-template-rows: auto 1fr;
+      gap: 24px;
+      overflow: hidden;
+    }
+
+    /* METRICS */
+    .metrics-grid {
+      grid-column: 1 / 3;
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 20px;
+    }
+
+    .metric-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px 24px;
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: var(--glass);
+      transition: all 0.3s ease;
+    }
+
+    .metric-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--border-bright);
+    }
+
+    .metric-card.active {
+      border-color: var(--accent) !important;
+      box-shadow: 0 0 15px var(--accent-glow);
+    }
+
+    .metric-card.active.critical {
+      border-color: #ff5f5f !important;
+      box-shadow: 0 0 15px rgba(255, 95, 95, 0.4);
+    }
+
+    .metric-card.active.warning {
+      border-color: #fbb034 !important;
+      box-shadow: 0 0 15px rgba(251, 176, 52, 0.4);
+    }
+
+    .metric-card.active.success {
+      border-color: #3bc951 !important;
+      box-shadow: 0 0 15px rgba(59, 201, 81, 0.4);
+    }
+
+    .metric-card::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: var(--accent);
+      opacity: 0.3;
+    }
+
+    .metric-card.critical::after,
+    .metric-card.expired::after {
+      background: linear-gradient(90deg, var(--red), transparent);
+    }
+
+    .metric-card.warning::after {
+      background: linear-gradient(90deg, var(--amber), transparent);
+    }
+
+    .metric-card.success::after {
+      background: var(--green);
+    }
+
+    .metric-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      letter-spacing: 1.5px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .metric-value {
+      font-size: 42px;
+      font-weight: 800;
+      line-height: 1;
+      font-family: var(--font-mono);
+    }
+
+    .metric-sub {
+      font-size: 12px;
+      color: var(--text-dim);
+      margin-top: 6px;
+    }
+
+    /* TABLE SECTION */
+    .table-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      backdrop-filter: var(--glass);
+    }
+
+    .section-header {
+      padding: 16px 24px;
+      background: rgba(255, 255, 255, 0.03);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .section-title h2 {
+      font-size: 16px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .ticket-count {
+      background: var(--bg);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-family: var(--font-mono);
+      color: var(--accent);
+      border: 1px solid var(--accent-glow);
+    }
+
+    .table-filters {
+      padding: 12px 24px;
+      background: rgba(0, 0, 0, 0.2);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .filter-group {
+      display: flex;
+      gap: 8px;
+    }
+
+    .filter-chip {
+      padding: 6px 14px;
+      border-radius: 30px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: all 0.2s;
+      user-select: none;
+    }
+
+    .filter-chip:hover {
+      border-color: var(--border-bright);
+      color: var(--text-main);
+    }
+
+    .filter-chip.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: white;
+      box-shadow: 0 0 15px var(--accent-glow);
+    }
+
+    .filter-chip.rotating-highlight {
+      border-color: var(--amber);
+      box-shadow: 0 0 15px var(--amber-glow);
+      background: rgba(251, 176, 52, 0.2);
+      color: var(--amber);
+    }
+
+    .search-container {
+      margin-left: auto;
+      position: relative;
+    }
+
+    .search-container input {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 8px 16px 8px 40px;
+      color: white;
+      font-size: 13px;
+      width: 240px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .search-container input:focus {
+      border-color: var(--accent);
+    }
+
+    .search-container svg {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-dim);
+    }
+
+    .table-wrapper {
+      flex: 1;
+      overflow-y: auto;
+      scroll-behavior: smooth;
+    }
+
+    /* Custom Scrollbar */
+    .table-wrapper::-webkit-scrollbar,
+    #ranking-list::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .table-wrapper::-webkit-scrollbar-track,
+    #ranking-list::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .table-wrapper::-webkit-scrollbar-thumb,
+    #ranking-list::-webkit-scrollbar-thumb {
+      background: var(--border-bright);
+      border-radius: 10px;
+    }
+
+    /* Layout Vertical (TVs de Monitoramento) */
+    @media (max-width: 900px) or (orientation: portrait) {
+      header {
+        padding: 0 16px;
+      }
+
+      .logo-text h1 {
+        font-size: 16px;
+      }
+
+      #current-time {
+        font-size: 18px;
+      }
+
+      main {
+        padding: 16px;
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr auto;
+      }
+
+      .metrics-grid {
+        grid-column: 1 / -1;
+        grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      }
+
+      .metric-card {
+        padding: 16px;
+      }
+
+      .metric-value {
+        font-size: 32px;
+      }
+
+      .filter-group {
+        margin-left: 0 !important;
+        flex-wrap: wrap;
+      }
+
+      .search-container {
+        width: 100%;
+        margin-left: 0;
+      }
+
+      .search-container input {
+        width: 100%;
+      }
+
+      .side-panel {
+        flex-direction: row;
+        flex-wrap: wrap;
+      }
+
+      .side-card {
+        flex: 1;
+        min-width: 280px;
+      }
+
+      .live-status {
+        display: none;
+      }
+    }
+
+    /* Suporte para 4K / Telas Grandes */
+    @media (min-width: 2500px) {
+      body {
+        font-size: 20px;
+      }
+
+      header {
+        height: 120px;
+        padding: 0 60px;
+      }
+
+      .logo-text h1 {
+        font-size: 32px;
+      }
+
+      .metric-value {
+        font-size: 72px;
+      }
+
+      .metric-card {
+        padding: 40px;
+      }
+
+      table {
+        font-size: 22px;
+      }
+
+      .side-card {
+        min-width: 450px;
+      }
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    thead {
+      position: sticky;
+      top: 0;
+      background: var(--surface);
+      backdrop-filter: var(--glass);
+      z-index: 10;
+    }
+
+    th {
+      text-align: left;
+      padding: 16px 20px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      font-weight: 600;
+    }
+
+    tr {
+      border-bottom: 1px solid var(--border);
+      transition: background 0.2s;
+      animation: slideIn 0.4s ease forwards;
+      opacity: 0;
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(-10px);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    tr:hover {
+      background: var(--surface-hover);
+    }
+
+    td {
+      padding: 14px 20px;
+      vertical-align: middle;
+    }
+
+    .ticket-link {
+      color: var(--accent);
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+
+    .ticket-link:hover {
+      color: var(--text-main);
+    }
+
+    /* Badge Styles */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .badge-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+    }
+
+    .urg-critica {
+      background: var(--red-glow);
+      color: var(--red);
+      border: 1px solid rgba(255, 95, 95, 0.3);
+    }
+
+    .urg-critica .badge-dot {
+      background: var(--red);
+      box-shadow: 0 0 5px var(--red);
+    }
+
+    .urg-alta {
+      background: var(--amber-glow);
+      color: var(--amber);
+      border: 1px solid rgba(251, 176, 52, 0.3);
+    }
+
+    .urg-alta .badge-dot {
+      background: var(--amber);
+    }
+
+    .urg-media {
+      background: rgba(59, 130, 246, 0.1);
+      color: var(--accent);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+
+    .urg-media .badge-dot {
+      background: var(--accent);
+    }
+
+    .urg-baixa {
+      background: rgba(139, 148, 158, 0.1);
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+    }
+
+    .urg-baixa .badge-dot {
+      background: var(--text-muted);
+    }
+
+    .status-pill {
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      background: var(--bg);
+      border: 1px solid var(--border);
+    }
+
+    /* Avatar */
+    .user-cell {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    /* SLA Bar */
+    .sla-cell {
+      width: 120px;
+    }
+
+    .sla-container {
+      width: 100%;
+      height: 6px;
+      background: var(--bg);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-top: 4px;
+    }
+
+    .sla-bar {
+      height: 100%;
+      border-radius: 10px;
+      transition: width 1s ease;
+      background: var(--accent);
+      box-shadow: 0 0 8px var(--accent-glow);
+    }
+
+    .sla-text {
+      font-size: 11px;
+      font-family: var(--font-mono);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .btn-notify {
+      background: rgba(59, 130, 246, 0.1);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      border-radius: var(--radius-sm);
+      color: var(--accent);
+      cursor: pointer;
+      padding: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .btn-notify:hover {
+      background: var(--accent);
+      color: white;
+      box-shadow: 0 0 10px var(--accent-glow);
+    }
+
+    .btn-notify.loading {
+      opacity: 0.5;
+      cursor: wait;
+      animation: pulse-op 1s infinite;
+    }
+
+    @keyframes pulse-op {
+      0% {
+        opacity: 0.3;
+      }
+
+      50% {
+        opacity: 0.6;
+      }
+
+      100% {
+        opacity: 0.3;
+      }
+    }
+
+    /* RIGHT PANEL */
+    .side-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .side-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      backdrop-filter: var(--glass);
+    }
+
+    .side-card-title {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .ranking-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .ranking-item:last-child {
+      border-bottom: none;
+    }
+
+    .rank-pos {
+      width: 24px;
+      font-family: var(--font-mono);
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--text-dim);
+      text-align: center;
+    }
+
+    .rank-pos.top1 {
+      color: #ffd700;
+    }
+
+    .rank-pos.top2 {
+      color: #c0c0c0;
+    }
+
+    .rank-pos.top3 {
+      color: #cd7f32;
+    }
+
+    .rank-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .rank-name {
+      font-size: 13px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .rank-count {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      color: var(--green);
+    }
+
+    /* FOOTER STATUS */
+    footer {
+      height: 40px;
+      padding: 0 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--surface);
+      backdrop-filter: var(--glass);
+      border-top: 1px solid var(--border);
+      font-size: 11px;
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+    }
+
+    .refresh-status {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .progress-circle {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      animation: spin 1s linear infinite;
+      display: none;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* MODAL / OVERLAY */
+    #notification-overlay {
+      position: fixed;
+      top: 40px;
+      right: 40px;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      pointer-events: none;
+    }
+
+    .toast {
+      width: 300px;
+      background: var(--surface);
+      color: var(--text-main);
+      backdrop-filter: var(--glass);
+      border: 1px solid var(--border-bright);
+      border-left: 4px solid var(--red);
+      padding: 16px;
+      border-radius: var(--radius-md);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      pointer-events: auto;
+      animation: toastIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+
+    @keyframes toastIn {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    /* AUTO SCROLLING */
+    .scrolling-active #ranking-scroll-content {
+      animation: autoScroll var(--scroll-duration, 30s) linear infinite;
+    }
+
+    @keyframes autoScroll {
+      from {
+        transform: translateY(0);
+      }
+
+      to {
+        transform: translateY(calc(-100% + 500px));
+      }
+    }
+
+    .fullscreen-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 50%;
+      transition: all 0.2s;
+    }
+
+    .fullscreen-btn:hover {
+      background: var(--border);
+      color: var(--text-main);
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="ambient-bg">
+    <div class="blob" style="top: 10%; left: 10%;"></div>
+    <div class="blob" style="bottom: 10%; right: 10%; animation-delay: -5s; background: var(--purple);"></div>
+  </div>
+
+  <header>
+    <div class="logo-wrap">
+      <img src="logo-stefanini.png" alt="Stefanini Logo"
+        style="height: 42px; width: 42px; object-fit: cover; border-radius: 8px;">
+      <div class="logo-text">
+        <h1>GLPI COMMAND CENTER</h1>
+        <span>Operations Dashboard · Live Data</span>
+      </div>
+    </div>
+
+    <div class="header-meta">
+      <div class="live-status">
+        <div class="live-dot"></div>
+        SYSTEM CONNECTED
+      </div>
+      <div class="clock-wrap">
+        <span id="current-time">00:00:00</span>
+        <span id="current-date">QUARTA, 27 DE MAIO</span>
+      </div>
+      <button class="fullscreen-btn" id="toggle-sound" title="Alternar Som" style="margin-right: 5px;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <path d="M11 5L6 9H2v6h4l5 4V5z"></path>
+          <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+        </svg>
+      </button>
+      <button class="fullscreen-btn" id="toggle-theme" title="Alternar Tema" style="margin-right: 5px;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="5"></circle>
+          <line x1="12" y1="1" x2="12" y2="3"></line>
+          <line x1="12" y1="21" x2="12" y2="23"></line>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+          <line x1="1" y1="12" x2="3" y2="12"></line>
+          <line x1="21" y1="12" x2="23" y2="12"></line>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+        </svg>
+      </button>
+      <button class="fullscreen-btn" id="toggle-fs" title="Tela Cheia">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <div class="metrics-grid">
+      <div class="metric-card" id="m-open-card">
+        <div class="metric-label">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+          </svg>
+          Abertos
+        </div>
+        <div class="metric-value" id="val-open">0</div>
+        <div class="metric-sub">Chamados em fila</div>
+      </div>
+      <div class="metric-card critical" id="m-crit-card">
+        <div class="metric-label">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+            <line x1="12" y1="9" x2="12" y2="13" />
+            <line x1="12" y1="17" x2="12.01" y2="17" />
+          </svg>
+          Críticos
+        </div>
+        <div class="metric-value" id="val-crit" style="color: var(--red)">0</div>
+        <div class="metric-sub">Atenção imediata</div>
+      </div>
+      <div class="metric-card warning" id="m-sla-card">
+        <div class="metric-label">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10" />
+            <polyline points="12 6 12 12 16 14" />
+          </svg>
+          SLA &lt; 60min
+        </div>
+        <div class="metric-value" id="val-sla" style="color: var(--amber)">0</div>
+        <div class="metric-sub">Prestes a vencer</div>
+      </div>
+      <div class="metric-card critical" id="m-expired-card">
+        <div class="metric-label">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+            <line x1="16" y1="2" x2="16" y2="6" />
+            <line x1="8" y1="2" x2="8" y2="6" />
+            <line x1="3" y1="10" x2="21" y2="10" />
+            <path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01M16 18h.01" />
+          </svg>
+          Expirados
+        </div>
+        <div class="metric-value" id="val-expired" style="color: var(--red)">0</div>
+        <div class="metric-sub">Prazo vencido</div>
+      </div>
+      <div class="metric-card success" id="m-solved-card">
+        <div class="metric-label">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+          Solucionados
+        </div>
+        <div class="metric-value" id="val-solved" style="color: var(--green)">0</div>
+        <div class="metric-sub">Encerrados hoje</div>
+      </div>
+      <div class="metric-card success" id="m-solved-week-card">
+        <div class="metric-label">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+          Semana
+        </div>
+        <div class="metric-value" id="val-solved-week" style="color: var(--green)">0</div>
+        <div class="metric-sub">Encerrados na semana</div>
+      </div>
+      <div class="metric-card" id="m-lote-card">
+        <div class="metric-label" style="color: var(--accent)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+            <polyline points="2 17 12 22 22 17"></polyline>
+            <polyline points="2 12 12 17 22 12"></polyline>
+          </svg>
+          Cronograma
+        </div>
+        <div class="metric-value" id="val-lote" style="color: var(--accent)">0</div>
+        <div class="metric-sub">Atendimentos em Lote</div>
+      </div>
+    </div>
+
+    <section class="table-section">
+      <div class="section-header">
+        <div class="section-title">
+          <h2>Fila de Atendimento</h2>
+          <span class="ticket-count" id="ticket-total">0 TICKETS</span>
+        </div>
+        <div class="filter-group" id="group-filters">
+          <!-- Dinâmico -->
+        </div>
+      </div>
+
+      <div class="table-filters">
+        <div class="filter-group">
+          <div class="filter-chip active" data-urg="all">Todos</div>
+          <div class="filter-chip" data-urg="critica">Críticos</div>
+          <div class="filter-chip" data-urg="alta">Alta</div>
+          <div class="filter-chip" data-urg="media">Média</div>
+        </div>
+
+        <div class="filter-group" style="margin-left: 20px; align-items: center;">
+          <label
+            style="font-size: 11px; color: var(--text-muted); display:flex; align-items:center; gap: 6px; cursor: pointer; user-select: none;">
+            <input type="checkbox" id="toggle-rotation">
+            Auto-Alternar Filas
+          </label>
+          <input type="number" id="rotation-interval" value="10" min="5" max="300"
+            style="width: 50px; background: var(--bg); border: 1px solid var(--border); border-radius: 4px; color: var(--text-main); padding: 4px; font-size: 11px; text-align: center;"
+            title="Intervalo em segundos">
+          <span style="font-size: 11px; color: var(--text-muted);">s</span>
+        </div>
+
+        <div class="search-container">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8" />
+            <path d="m21 21-4.35-4.35" />
+          </svg>
+          <input type="text" id="search-input" placeholder="Pesquisar por ID, Título ou Solicitante...">
+        </div>
+      </div>
+
+      <div class="table-wrapper" id="table-scroll-area">
+        <table id="main-table">
+          <thead>
+            <tr>
+              <th style="width: 80px;">ID</th>
+              <th>Título do Chamado</th>
+              <th>Solicitante</th>
+              <th style="width: 140px;">Urgência</th>
+              <th style="width: 120px;">Status</th>
+              <th>Grupo</th>
+              <th style="width: 160px;">SLA Restante</th>
+              <th>Solução (SLA)</th>
+              <th>Abertura</th>
+              <th style="width: 60px;">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="ticket-body">
+            <!-- Dinâmico -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <aside class="side-panel">
+      <div class="side-card">
+        <div class="side-card-title" style="margin-bottom: 12px; justify-content: space-between;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
+              <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
+              <path d="M4 22h16" />
+              <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" />
+              <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" />
+              <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" />
+            </svg>
+            Ranking Técnicos
+          </div>
+          <span id="ranking-toggle-btn" title="Clique para alternar entre Hoje e Semana"
+            style="cursor: pointer; font-size: 10px; font-weight: 700; color: var(--green); background: rgba(59, 201, 81, 0.1); padding: 2px 8px; border-radius: 10px; user-select: none;">PRODUTIVIDADE
+            HOJE</span>
+        </div>
+        <div id="ranking-list" style="max-height: 380px; overflow-y: auto; padding-right: 5px;">
+          <!-- Dinâmico -->
+        </div>
+      </div>
+
+      <div class="side-card"
+        style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; gap: 15px;">
+        <div id="gauge-container" style="position: relative; width: 150px; height: 150px;">
+          <svg viewBox="0 0 36 36" style="width: 100%; height: 100%; transform: rotate(-90deg);">
+            <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none"
+              stroke="var(--border)" stroke-width="3" />
+            <path id="gauge-path" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+              fill="none" stroke="var(--green)" stroke-width="3" stroke-dasharray="0, 100" stroke-linecap="round"
+              style="transition: stroke-dasharray 1s ease;" />
+          </svg>
+          <div
+            style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+            <span id="gauge-val" style="font-size: 28px; font-weight: 800; font-family: var(--font-mono);">0%</span>
+            <span style="font-size: 10px; color: var(--text-dim); text-transform: uppercase;">Resolução</span>
+          </div>
+        </div>
+        <div>
+          <p style="font-size: 13px; font-weight: 600;">Eficácia do Dia</p>
+          <p style="font-size: 11px; color: var(--text-muted);">Taxa de resolução vs. abertura</p>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <footer>
+    <div class="refresh-status" id="manual-refresh" style="cursor: pointer;" title="Clique para atualizar agora">
+      <div class="progress-circle" id="loading-spinner"></div>
+      <span>LAST UPDATE: <span id="last-update-time">--:--:--</span></span>
+      <span style="margin-left: 20px;">POLLING: <span id="countdown">--</span>s</span>
+    </div>
+    <div id="system-path" style="opacity: 0.5;">URL: --</div>
+  </footer>
+
+  <div id="notification-overlay"></div>
+
+  <!-- SOUND EFFECTS -->
+  <audio id="snd-new" src="https://assets.mixkit.co/active_storage/sfx/2857/2857-preview.mp3"></audio>
+  <audio id="snd-crit" src="https://assets.mixkit.co/active_storage/sfx/951/951-preview.mp3"></audio>
+
+  <script src="dashboard.js"></script>
+</body>
+
+</html>
